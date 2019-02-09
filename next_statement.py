@@ -7,17 +7,18 @@ import argparse
 import re
 import csv
 
-
 parser = argparse.ArgumentParser()
-parser.add_argument('-y', '--year', help = "Year for invoice")
-parser.add_argument('-s', '--src', help = "Read from file")
+parser.add_argument('-y', '--year', help="Year for invoice")
+parser.add_argument('-s', '--src', help="Read from file")
 # parser.add_argument('-o', '--output', help = "Target for output - .csv")
 args = parser.parse_args()
+
 
 def get_year(year):
     yr = re.compile(r'[0-9][0-9][0-9][0-9]')
     if yr.match(year):
         return year
+
 
 def convert_date(day, month, year):
     day_prefix = re.compile(r'(st|nd|rd|th)')
@@ -34,16 +35,17 @@ def convert_date(day, month, year):
         "Oct": "10",
         "Nov": "11",
         "Dec": "12"
-        }
+    }
 
-    date_str =  day_prefix.sub('', day) + '/' +  months[month] + '/' + year
+    date_str = day_prefix.sub('', day) + '/' + months[month] + '/' + year
     return date_str
+
 
 # Open a file and read lines, print non-blanks only
 f = open(args.src)
 
 # Create a CSV writer to output properly
-linewriter = csv.writer(stdout, quotechar = '"', quoting = csv.QUOTE_ALL)
+linewriter = csv.writer(stdout, quotechar='"', quoting=csv.QUOTE_ALL)
 
 # Set up a header
 header = ["Date", "Payee", "Memo", "Outflow", "Inflow"]
@@ -66,12 +68,11 @@ for line in f:
             statement_lines.append(line.split())
 
 for field in statement_lines[:]:
-    descr = ""
+    description = ""
     for v in field[4:-2]:
-        descr = descr + v + " "
+        description = description + v + " "
     if float(field[-2]) > 0:
-        result = (convert_date(field[0], field[1], args.year), "NEXT Directory" ,descr, field[-2], "")
+        result = (convert_date(field[0], field[1], args.year), "NEXT Directory", description, field[-2], "")
     else:
-        result = (convert_date(field[0], field[1], args.year), "NEXT Directory" ,descr, "", field[-2].strip("-"))
+        result = (convert_date(field[0], field[1], args.year), "NEXT Directory", description, "", field[-2].strip("-"))
     linewriter.writerow(result)
-
